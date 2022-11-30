@@ -58,17 +58,16 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
         return UpdatesListener.CONFIRMED_UPDATES_ALL;
     }
 
-    public List<Long> findDataFromDBWithTimeNow(String date){
-        return notificationRepository.getNotificationWhereDataEqualsCurrent(date);
-    }
-    @Scheduled(cron = "0 0/1 * * * *")
-    public void run(){
-        List<Long> result = findDataFromDBWithTimeNow(LocalDateTime.now()
+    public List<Long> findDataFromDBWithTimeNow(){
+        return notificationRepository.getNotificationWhereDataEqualsCurrent(LocalDateTime.now()
                 .truncatedTo(ChronoUnit.MINUTES)
                 .toString()
                 .replace("T"," "));
-        if(!result.isEmpty()){
-            List<Notification> notificationList = notificationRepository.findAllById(result);
+    }
+    @Scheduled(cron = "0 0/1 * * * *")
+    public void run(){
+        if(!findDataFromDBWithTimeNow().isEmpty()){
+            List<Notification> notificationList = notificationRepository.findAllById(findDataFromDBWithTimeNow());
             for (Notification notification : notificationList) {
                 SendMessage sendMessage = new SendMessage(notification.getChatId()
                         , "Задание " + notification.getNotificationText() + "!. Его нужно выполнить");
